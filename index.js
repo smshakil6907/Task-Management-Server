@@ -57,6 +57,44 @@ async function run() {
     const result = await taskCollection.deleteOne({ _id: new ObjectId(taskId) });
     res.send(result);
   });
+
+  app.put("/task/:id", async (req, res) => {
+    const taskId = req.params.id;
+    const updatedTask = req.body;
+  
+    try {
+      const result = await taskCollection.updateOne(
+        { _id: new ObjectId(taskId) },
+        { $set: updatedTask }
+      );
+  
+      if (result.modifiedCount === 1) {
+        res.send({ message: "Task updated successfully" });
+      } else {
+        res.status(404).send({ message: "Task not found or no changes made" });
+      }
+    } catch (error) {
+      console.error("Error updating task:", error);
+      res.status(500).send({ message: "Internal Server Error" });
+    }
+  });
+
+  app.get("/tasks/todo", async (req, res) => {
+      const todoTasks = await taskCollection.find({ category: "To-Do" }).toArray();
+      res.send(todoTasks);
+  });
+
+  app.get("/tasks/inprogress", async (req, res) => {
+      const inProgressTasks = await taskCollection.find({ category: "In Progress" }).toArray();
+      res.send(inProgressTasks);
+  });
+
+  app.get("/tasks/done", async (req, res) => {
+      const doneTasks = await taskCollection.find({ category: "Done" }).toArray();
+      res.send(doneTasks);
+  });
+  
+
     
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
